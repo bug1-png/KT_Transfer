@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAVALON Transfer Trend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2430;--mut:#667085;--line:#e3e8ef;--acc:#0b5fff;--warn:#b54708;--warnbg:#fff4e5;--okbg:#e8f6ee;
+--p0:#0072B2;--p1:#E69F00;--p2:#009E73;--p3:#CC79A7;--grid:rgba(100,116,139,.18)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--card:#171e28;--ink:#e8edf4;--mut:#93a0b4;--line:#2a3442;--acc:#6aa0ff;--warn:#ffb866;--warnbg:#2c2216;--okbg:#14291f;--p0:#4aa8e8;--p1:#f0b53a;--p2:#2cc29a;--p3:#e196bf;--grid:rgba(148,163,184,.18)}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:56px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans Thai','Segoe UI',Tahoma,sans-serif;font-size:14px;line-height:1.55}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:24px;margin:0 0 2px}h2{font-size:17px;margin:0 0 4px}
+.sub{color:var(--mut);font-size:13px}
+header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.asof{display:inline-block;margin-top:4px;padding:2px 10px;border-radius:999px;background:var(--warnbg);color:var(--warn);font-size:12px;font-weight:600}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip,.btn{border:1.5px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer;font:inherit;font-size:13px;display:flex;align-items:center;gap:6px}
+.chip i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.chip.off{opacity:.45}.chip.off i{background:var(--mut)!important}
+.btn{background:var(--acc);color:#fff;border-color:var(--acc)}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;margin-bottom:10px;display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line)}
+nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-size:12.5px;padding:4px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+nav a:hover{border-color:var(--acc);color:var(--acc)}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.kpi .l{color:var(--mut);font-size:12px}.kpi .v{font-size:23px;font-weight:700;line-height:1.25}.kpi .n{color:var(--mut);font-size:12px}
+.exec{background:var(--warnbg);border:1px solid var(--warn);margin-bottom:14px}
+.exec h2{color:var(--warn)}.exec ol{margin:8px 0 0;padding-left:20px}.exec li{margin:6px 0}
+.two{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));margin-bottom:14px}
+.one{margin-bottom:14px}
+.cv{position:relative;height:300px}.cv.tall{height:340px}
+.insight{margin:8px 0 0;padding:8px 12px;background:var(--okbg);border-radius:8px;font-size:13px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
+th{color:var(--mut);font-weight:600;font-size:12px}
+.heat td{text-align:center;padding:7px 4px;border:2px solid var(--card);border-radius:4px;min-width:44px}
+.heat th{text-align:center}
+.scroll{overflow-x:auto}
+input,select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input[type=number]{width:110px}
+.ctl{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.rec li{margin:5px 0}
+@media print{
+ nav,.tools,.btn{display:none!important}
+ body{background:#fff}.wrap{max-width:none;padding:0}
+ .card{break-inside:avoid;box-shadow:none}
+ .cv{height:260px}
+ :root{--bg:#fff;--card:#fff;--ink:#1c2430}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div><h1>KAVALON · Transfer Trend Dashboard</h1>
+ <div class="sub">เทรนด์การโอนกรรมสิทธิ์ 4 เฟสที่ผ่านมา (Kave Town Space → Shift → Colony → Island) เพื่อวางแผน KAVALON · ใช้ TransferDate (คอลัมน์ AJ) · เฉพาะยูนิตที่โอนแล้ว</div>
+ <span class="asof" id="asof"></span></div>
+ <div class="tools"><span class="sub">เลือกเฟส:</span><span id="chips" style="display:contents"></span><button class="btn" onclick="window.print()">พิมพ์ / บันทึก PDF</button></div>
+</header>
+<nav>
+ <a href="#exec">สรุปผู้บริหาร</a><a href="#phases">เฟสเริ่มโอน</a><a href="#timeline">รายเดือน</a><a href="#yearly">รายปี</a><a href="#heat">Heatmap</a><a href="#life">Lifecycle</a><a href="#within">ในเดือน/สัปดาห์</a><a href="#pay">เงินสด/สินเชื่อ</a><a href="#lead">จอง→โอน</a><a href="#build">รายอาคาร</a><a href="#buyer">ราคา/ผู้ซื้อ/ธนาคาร</a><a href="#plan">แผน KAVALON</a>
+</nav>
+
+<div class="card exec" id="exec"><h2>สรุปสำหรับผู้บริหาร</h2><div class="sub">คำนวณจากข้อมูล 4 เฟสรวมกันเสมอ (ไม่ขึ้นกับปุ่มเลือกเฟส)</div><ol id="execList"></ol></div>
+
+<div class="grid kpis" id="kpis"></div>
+
+<div class="card one" id="phases"><h2>เฟสเริ่มโอนเมื่อไร และโอนแรงแค่ไหนในเดือนแรกๆ</h2><div class="sub">M0 = เดือนที่เริ่มโอนวันแรกของเฟส · M1 = เดือนถัดไป</div><div class="scroll"><table id="tPhase"></table></div></div>
+
+<div class="card one" id="timeline"><h2>1) จำนวนโอนรายเดือน (ตามไทม์ไลน์จริง)</h2><div class="sub">หน่วย: ยูนิต แยกตามเฟส ตัวเลขเหนือแท่ง = ยอดรวมของเดือน</div><div class="cv tall"><canvas id="cTimeline"></canvas></div><div class="insight" id="iTimeline"></div></div>
+
+<div class="grid two" id="yearly">
+ <div class="card"><h2>2) รายปี — จำนวนยูนิต</h2><div class="cv"><canvas id="cYear"></canvas></div></div>
+ <div class="card"><h2>รายปี — มูลค่าโอน (ล้านบาท)</h2><div class="cv"><canvas id="cYearV"></canvas></div></div>
+</div>
+<div class="card one"><h2>ตารางสรุปรายปี</h2><div class="scroll"><table id="tYear"></table></div></div>
+
+<div class="card one" id="heat"><h2>3) Heatmap ปี × เดือน (ยูนิตที่โอน)</h2><div class="sub">สีเข้ม = โอนมาก · ดูว่าเดือนไหนของแต่ละปีโอนได้ดี</div><div class="scroll"><table class="heat" id="tHeat"></table></div><div class="insight" id="iHeat"></div></div>
+
+<div class="grid two" id="life">
+ <div class="card"><h2>4) Lifecycle — % โอนตามเดือนนับจากเดือนแรกที่โอน</h2><div class="sub">M0 = เดือนแรกที่เริ่มโอนของแต่ละเฟส</div><div class="cv"><canvas id="cLife"></canvas></div><div class="insight" id="iLife"></div></div>
+ <div class="card"><h2>5) โอนสะสม (% ของเฟส)</h2><div class="cv"><canvas id="cCum"></canvas></div></div>
+</div>
+
+<div class="card one"><h2>6) เดือนในปฏิทิน — รวมทุกปี (ใช้ประกอบเท่านั้น)</h2><div class="sub">เทียบ “ทั้งหมด” กับ “ไม่รวม 2 เดือนแรกของแต่ละเฟส” — ค่าที่ตัดก้อนแรกออกยังปนกับหางที่ลดลงตามเวลา จึงไม่ใช่ฤดูกาลแท้</div><div class="cv"><canvas id="cMoy"></canvas></div><div class="insight" id="iMoy"></div></div>
+
+<div class="grid two" id="within">
+ <div class="card"><h2>7) ช่วงเวลาในเดือน</h2><div class="sub">วันที่ของเดือนที่โอน</div><div class="cv"><canvas id="cDom"></canvas></div><div class="insight" id="iDom"></div></div>
+ <div class="card"><h2>8) วันในสัปดาห์</h2><div class="cv"><canvas id="cWd"></canvas></div><div class="insight" id="iWd"></div></div>
+</div>
+
+<div class="grid two" id="pay">
+ <div class="card"><h2>9) เงินสด vs สินเชื่อ รายเฟส</h2><div class="cv"><canvas id="cPay"></canvas></div><div class="insight" id="iPay"></div></div>
+ <div class="card"><h2>10) เงินสด/สินเชื่อ ตามเดือนปฏิทิน</h2><div class="cv"><canvas id="cPayM"></canvas></div></div>
+</div>
+
+<div class="grid two" id="lead">
+ <div class="card"><h2>11) ระยะเวลาจอง → โอน (Lead time)</h2><div class="sub">ค่ากลาง (median) วัน แยกตามปีที่จอง</div><div class="cv"><canvas id="cLead"></canvas></div><div class="insight" id="iLead"></div></div>
+ <div class="card"><h2>12) ยอดจองเทียบยอดโอน รายเดือน</h2><div class="sub">เฉพาะยูนิตที่โอนแล้ว นับตามเดือนที่จอง (BookDate) เทียบเดือนที่โอน</div><div class="cv"><canvas id="cBook"></canvas></div>
+ <div class="scroll" style="margin-top:8px"><table id="tPresale"></table></div></div>
+</div>
+
+<div class="card one" id="build"><h2>13) รายอาคาร — โอนรายเดือนแยกตามอาคาร</h2>
+ <div class="ctl">เลือกเฟส <select id="selBld"></select></div>
+ <div class="cv tall"><canvas id="cBld"></canvas></div><div class="scroll" style="margin-top:8px"><table id="tBld"></table></div><div class="insight" id="iBld"></div></div>
+
+<div class="grid two" id="buyer">
+ <div class="card"><h2>14) ช่วงราคาโอนสุทธิ (% ของเฟส)</h2><div class="cv"><canvas id="cPrice"></canvas></div><div class="insight" id="iPrice"></div></div>
+ <div class="card"><h2>15) วัตถุประสงค์การซื้อ (% ของเฟส)</h2><div class="cv"><canvas id="cPur"></canvas></div><div class="insight" id="iPur"></div></div>
+</div>
+<div class="card one"><h2>16) ธนาคารที่ลูกค้าสินเชื่อใช้ (% ของยูนิตสินเชื่อที่ระบุธนาคาร)</h2><div class="cv"><canvas id="cBank"></canvas></div><div class="insight" id="iBank"></div></div>
+
+<div class="card one" id="plan"><h2>17) แผนโอน KAVALON (ทั้งโครงการ <span id="tot2192">2,192</span> ยูนิต)</h2>
+ <div class="sub">จำลองจากเส้นโค้งของเฟสที่ผ่านมา · วันเริ่มโอนเป็นค่าสมมติ ปรับได้ · แท่งสีส้ม = แผนแนะนำที่ทยอยโอนไม่ให้เกินกำลังสูงสุดที่เคยทำได้จริง</div>
+ <div class="ctl">จำนวนยูนิต <input type="number" id="nUnits" value="2192" min="1">
+  รูปแบบเส้นโค้ง <select id="selScn"><option value="avg">เฉลี่ย 4 เฟส</option><option value="0">แบบ Space</option><option value="1">แบบ Shift</option><option value="2">แบบ Colony</option><option value="3">แบบ Island</option></select>
+  เริ่มโอน <input type="month" id="startM" value="2027-01">
+  เพดานต่อเดือน <input type="number" id="capU" min="1"> ยูนิต</div>
+ <div class="grid kpis" id="planK"></div>
+ <div class="cv tall"><canvas id="cPlan"></canvas></div>
+ <div class="scroll" style="max-height:380px;overflow-y:auto;margin-top:8px"><table id="tPlan"></table></div>
+ <ul class="rec" id="rec"></ul>
+</div>
+<div class="sub">หมายเหตุ: ข้อมูลมีเฉพาะยูนิตที่ “โอนแล้ว” จึงวัดอัตราปิดโอน/ยกเลิก หรือยูนิตค้างโอนไม่ได้ · ผลเชิงฤดูกาลถูกบิดเบือนด้วยจังหวะเปิดโอนของแต่ละเฟส · ข้อมูลธนาคารมีไม่ครบทุกเฟส · ข้อมูลโอนล่าสุด <span id="lastF"></span></div>
+</div>
+<script>__CHART__</script>
+<script>
+const DATA=__DATA__;
+const LAST='__LAST__';
+const KAV=2192;
+const PH=['Space','Shift','Colony','Island'];
+const PN=['Kave Town Space','Kave Town Shift','Kave Town Colony','Kave Town Island'];
+const MN=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const WD=['อา','จ','อ','พ','พฤ','ศ','ส'];
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const pc=i=>css('--p'+i);
+const BC=['#0072B2','#E69F00','#009E73','#CC79A7','#56B4E9','#D55E00','#7A6FF0'];
+const R=DATA.map(a=>({p:a[0],y:a[1],m:a[2],d:a[3],w:a[4],v:a[5],pay:a[6],lead:a[7],pur:a[8],by:a[9],bld:a[10],bym:a[11],bank:a[12],dt:a[13],ym:a[1]*12+a[2]-1}));
+const first=[0,1,2,3].map(p=>Math.min(...R.filter(r=>r.p===p).map(r=>r.ym)));
+R.forEach(r=>r.rel=r.ym-first[r.p]);
+let active=new Set([0,1,2,3]);let charts={};
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const pct=(a,b)=>b?(100*a/b).toFixed(1)+'%':'-';
+const med=a=>{a=a.filter(x=>x!=null).sort((x,y)=>x-y);return a.length?a[a.length>>1]:null};
+const ymLabel=ym=>{const y=Math.floor(ym/12),m=ym%12;return MN[m]+' '+String(y).slice(2)};
+const ymFull=ym=>MN[ym%12]+' '+(Math.floor(ym/12)+543);
+const dLabel=s=>{const [y,m,d]=s.split('-').map(Number);return d+' '+MN[m-1]+' '+(y+543)};
+document.getElementById('asof').textContent='ข้อมูลโอนล่าสุด: '+dLabel(LAST);
+const VL={id:'vl',afterDatasetsDraw(ch){const ctx=ch.ctx;const id=ch.canvas.id;const st=ch.options.scales&&ch.options.scales.y&&ch.options.scales.y.stacked;
+ const NOTOT=['cPay','cPur','cPrice'];const small=id==='cTimeline'||id==='cDom'||id==='cBld'||id==='cPlan';
+ ctx.save();ctx.textAlign='center';ctx.font=(small?'9':'11')+'px sans-serif';
+ const f=v=>Number.isInteger(v)?v.toLocaleString('en-US'):v.toFixed(0);
+ const vis=ch.data.datasets.map((d,i)=>i).filter(i=>ch.isDatasetVisible(i));
+ const isPct=['cLife','cCum','cPay','cPur','cPrice','cBank'].includes(id);
+ if(id==='cBook'){ctx.restore();return}
+ vis.forEach(di=>{const ds=ch.data.datasets[di];const meta=ch.getDatasetMeta(di);
+  meta.data.forEach((el,i)=>{const v=ds.data[i];if(v==null||v===0)return;
+   if(meta.type==='bar'){const h=Math.abs(el.base-el.y);const txt=f(v)+(isPct?'%':'');
+    if(st){if(h<(small?10:13)||id==='cTimeline'||id==='cBld')return;ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.shadowColor='rgba(0,0,0,.5)';ctx.shadowBlur=2;ctx.fillText(txt,el.x,(el.y+el.base)/2);ctx.shadowBlur=0}
+    else{ctx.fillStyle=css('--ink');ctx.textBaseline='bottom';ctx.fillText(txt,el.x,el.y-2)}}
+   else if(meta.type==='line'&&ds.label.indexOf('ค่าเฉลี่ย')===0&&v>=0.5){const t=f(v)+'%';const w=ctx.measureText(t).width+6;ctx.fillStyle=css('--card');ctx.globalAlpha=.85;ctx.fillRect(el.x-w/2,el.y-20,w,14);ctx.globalAlpha=1;ctx.fillStyle=css('--ink');ctx.textBaseline='bottom';ctx.fillText(t,el.x,el.y-7)}
+  })});
+ if(st&&!NOTOT.includes(id)){const last=vis[vis.length-1];const n=ch.data.labels.length;ctx.fillStyle=css('--ink');ctx.textBaseline='bottom';ctx.font='bold '+(small?'9':'11')+'px sans-serif';
+  for(let i=0;i<n;i++){const tot=vis.reduce((s,d)=>s+(ch.data.datasets[d].data[i]||0),0);if(!tot)continue;
+   let top=1e9;vis.forEach(d=>{const e=ch.getDatasetMeta(d).data[i];if(e&&(ch.data.datasets[d].data[i]||0)>0)top=Math.min(top,e.y)});ctx.fillText(Math.round(tot).toLocaleString('en-US'),ch.getDatasetMeta(last).data[i].x,top-2)}}
+ ctx.restore()}};
+Chart.register(VL);
+function Chart_(id,cfg){if(charts[id])charts[id].destroy();const c=document.getElementById(id);
+ cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:false,layout:{padding:{top:16}}},cfg.options||{});
+ cfg.options.plugins=Object.assign({legend:{position:'bottom',labels:{color:css('--ink'),boxWidth:12}}},cfg.options.plugins||{});
+ const sc=cfg.options.scales||{};Object.values(sc).forEach(s=>{s.ticks=Object.assign({color:css('--mut')},s.ticks||{});s.grid=Object.assign({color:css('--grid')},s.grid||{})});
+ charts[id]=new Chart(c,cfg)}
+const ds=(label,data,col,extra)=>Object.assign({label,data,backgroundColor:col,borderColor:col},extra||{});
+const NM=18;
+const shareOf=p=>{const t=R.filter(r=>r.p===p).length;return [...Array(NM).keys()].map(i=>100*R.filter(r=>r.p===p&&r.rel===i).length/t)};
+const SH=[0,1,2,3].map(shareOf);
+const AVG=[...Array(NM).keys()].map(i=>SH.reduce((s,a)=>s+a[i],0)/4);
+const cum=a=>{let c=0;return a.map(v=>c+=v)};
+const monthTot={};R.forEach(r=>monthTot[r.ym]=(monthTot[r.ym]||0)+1);
+const PEAK=Math.max(...Object.values(monthTot));
+const PEAKYM=+Object.keys(monthTot).find(k=>monthTot[k]===PEAK);
+const EOM=100*R.filter(r=>r.d>=21).length/R.length;
+const wdAll=Array(7).fill(0);R.forEach(r=>wdAll[r.w]++);
+const FRI=100*wdAll[5]/R.length;
+const LOANALL=100*R.filter(r=>r.pay==='l').length/R.filter(r=>r.pay!=='n').length;
+const reach=(a,t)=>{let c=0;for(let i=0;i<a.length;i++){c+=a[i];if(c>=t)return i}return a.length-1};
+function render(){
+ const rs=R.filter(r=>active.has(r.p));const ps=[...active].sort();
+ const total=rs.length,val=rs.reduce((s,r)=>s+r.v,0)/1000;
+ const moy=Array(12).fill(0);rs.forEach(r=>moy[r.m-1]++);
+ const topYm=(()=>{const m={};rs.forEach(r=>m[r.ym]=(m[r.ym]||0)+1);return Object.entries(m).sort((a,b)=>b[1]-a[1])[0]})();
+ const first2=rs.filter(r=>r.rel<=1).length,eom=rs.filter(r=>r.d>=21).length;
+ const loan=rs.filter(r=>r.pay==='l').length,cash=rs.filter(r=>r.pay==='c').length;
+ const lm=med(rs.map(r=>r.lead));
+ const K=[['โอนรวม',fmt(total)+' ยูนิต','ทุกเฟสที่เลือก'],['มูลค่าโอนสุทธิ',fmt(val)+' ล้านบาท','เฉลี่ย '+(val/total).toFixed(2)+' ล้านบาท/ยูนิต'],
+ ['เดือนที่โอนสูงสุด',topYm?ymLabel(+topYm[0]):'-',topYm?fmt(topYm[1])+' ยูนิต ('+pct(topYm[1],total)+')':''],
+ ['โอนใน 2 เดือนแรก',pct(first2,total),'ของแต่ละเฟส (M0–M1)'],
+ ['โอนวันที่ 21–สิ้นเดือน',pct(eom,total),'ปลายเดือนคือช่วงปิดยอด'],
+ ['สินเชื่อ : เงินสด',pct(loan,loan+cash)+' : '+pct(cash,loan+cash),'สัดส่วนยูนิต'],
+ ['Lead time จอง→โอน',lm+' วัน','ค่ากลาง ~'+(lm/30.4).toFixed(0)+' เดือน (รวมยอดขายก่อนสร้าง)']];
+ document.getElementById('kpis').innerHTML=K.map(k=>`<div class="card kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join('');
+
+ let pt='<tr><th>เฟส</th><th>วันโอนวันแรก</th><th>โอนวันสุดท้าย</th><th>ยูนิต</th><th>M0 (เดือนแรก)</th><th>M1</th><th>M0+M1</th><th>ถึง 50% ที่</th><th>ถึง 80% ที่</th><th>เดือนสูงสุด</th><th>สินเชื่อ</th></tr>';
+ ps.forEach(p=>{const a=R.filter(r=>r.p===p);const dts=a.map(r=>r.dt).sort();const m0=a.filter(r=>r.rel===0).length,m1=a.filter(r=>r.rel===1).length;
+  const mm={};a.forEach(r=>mm[r.ym]=(mm[r.ym]||0)+1);const pk=Object.entries(mm).sort((x,y)=>y[1]-x[1])[0];
+  pt+=`<tr><td><b style="color:${pc(p)}">●</b> <b>${PH[p]}</b></td><td>${dLabel(dts[0])}</td><td>${dLabel(dts[dts.length-1])}</td><td>${fmt(a.length)}</td><td>${ymLabel(first[p])}: <b>${fmt(m0)}</b> (${pct(m0,a.length)})</td><td>${fmt(m1)} (${pct(m1,a.length)})</td><td><b>${pct(m0+m1,a.length)}</b></td><td>M${reach(SH[p],50)}</td><td>M${reach(SH[p],80)}</td><td>${ymLabel(+pk[0])} (${fmt(pk[1])})</td><td>${pct(a.filter(r=>r.pay==='l').length,a.filter(r=>r.pay!=='n').length)}</td></tr>`});
+ document.getElementById('tPhase').innerHTML=pt;
+
+ const yms=[];const allYm=R.map(r=>r.ym);for(let y=Math.min(...allYm);y<=Math.max(...allYm);y++)yms.push(y);
+ Chart_('cTimeline',{type:'bar',data:{labels:yms.map(ymLabel),datasets:ps.map(p=>ds(PN[p],yms.map(y=>rs.filter(r=>r.p===p&&r.ym===y).length),pc(p)))},
+  options:{scales:{x:{stacked:true,ticks:{maxRotation:60,autoSkip:true,maxTicksLimit:30}},y:{stacked:true,title:{display:true,text:'ยูนิต',color:css('--mut')}}}}});
+ const tot=yms.map(y=>rs.filter(r=>r.ym===y).length);const top3=[...tot.keys()].sort((a,b)=>tot[b]-tot[a]).slice(0,3).map(i=>ymLabel(yms[i])+' ('+fmt(tot[i])+')');
+ document.getElementById('iTimeline').textContent='3 เดือนที่โอนสูงสุด: '+top3.join(', ')+' · Shift มี “คลื่นลูกที่ 2” (พ.ค.–มิ.ย. 2022 รวม ~295 ยูนิต ส่วนใหญ่จากอาคาร D) ส่วน Island ก้อนใหญ่ต่อเนื่อง 2 เดือน (มิ.ย.–ก.ค. 2024)';
+
+ const years=[...new Set(R.map(r=>r.y))].sort();
+ Chart_('cYear',{type:'bar',data:{labels:years,datasets:ps.map(p=>ds(PN[p],years.map(y=>rs.filter(r=>r.p===p&&r.y===y).length),pc(p)))},options:{scales:{x:{stacked:true},y:{stacked:true}}}});
+ Chart_('cYearV',{type:'bar',data:{labels:years,datasets:ps.map(p=>ds(PN[p],years.map(y=>Math.round(rs.filter(r=>r.p===p&&r.y===y).reduce((s,r)=>s+r.v,0)/1000)),pc(p)))},options:{scales:{x:{stacked:true},y:{stacked:true}}}});
+ let th='<tr><th>ปี</th>'+ps.map(p=>`<th>${PH[p]}</th>`).join('')+'<th>รวมยูนิต</th><th>มูลค่า (ล้านบาท)</th><th>% ของทั้งหมด</th><th>เดือนสูงสุด</th></tr>';
+ years.forEach(y=>{const yr=rs.filter(r=>r.y===y);const mm=Array(12).fill(0);yr.forEach(r=>mm[r.m-1]++);const mx=Math.max(...mm);
+  th+=`<tr><td><b>${y}</b></td>`+ps.map(p=>`<td>${fmt(yr.filter(r=>r.p===p).length)}</td>`).join('')+`<td><b>${fmt(yr.length)}</b></td><td>${fmt(yr.reduce((s,r)=>s+r.v,0)/1000)}</td><td>${pct(yr.length,total)}</td><td>${yr.length?MN[mm.indexOf(mx)]+' ('+fmt(mx)+')':'-'}</td></tr>`});
+ {const mx=Math.max(...moy);th+=`<tr style="font-weight:700;border-top:2px solid var(--ink)"><td>รวม</td>`+ps.map(p=>`<td>${fmt(rs.filter(r=>r.p===p).length)}</td>`).join('')+`<td>${fmt(total)}</td><td>${fmt(val)}</td><td>100%</td><td>${MN[moy.indexOf(mx)]} (${fmt(mx)})</td></tr>`}
+ document.getElementById('tYear').innerHTML=th;
+
+ const hm={};rs.forEach(r=>{hm[r.y+'-'+r.m]=(hm[r.y+'-'+r.m]||0)+1});const hmax=Math.max(...Object.values(hm));
+ let h='<tr><th>ปี</th>'+MN.map(m=>`<th>${m}</th>`).join('')+'<th>รวม</th></tr>';
+ years.forEach(y=>{h+=`<tr><td><b>${y}</b></td>`;let s=0;for(let m=1;m<=12;m++){const v=hm[y+'-'+m]||0;s+=v;const a=v?Math.min(1,.12+.88*Math.sqrt(v/hmax)):0;
+  h+=`<td style="background:rgba(11,95,255,${a.toFixed(2)});color:${a>.55?'#fff':'inherit'}">${v||''}</td>`}h+=`<td><b>${fmt(s)}</b></td></tr>`});
+ h+='<tr style="font-weight:700"><td>รวม</td>'+MN.map((_,i)=>'<td>'+fmt(moy[i])+'</td>').join('')+'<td>'+fmt(total)+'</td></tr>';
+ document.getElementById('tHeat').innerHTML=h;
+ const topCells=Object.entries(hm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>{const[y,m]=k.split('-');return MN[m-1]+' '+y+' ('+fmt(v)+')'});
+ document.getElementById('iHeat').textContent='เซลล์ที่เข้มสุด: '+topCells.join(', ')+' — แทบทั้งหมดคือเดือนเปิดโอนของเฟส ไม่ใช่เดือนเทศกาล';
+
+ const org=Array(12).fill(0);rs.filter(r=>r.rel>=2).forEach(r=>org[r.m-1]++);
+ Chart_('cMoy',{type:'bar',data:{labels:MN,datasets:[ds('ทั้งหมด',moy,css('--acc')),ds('ไม่รวม M0–M1 ของแต่ละเฟส',org,css('--p1'))]}});
+ const rk=[...org.keys()].sort((a,b)=>org[b]-org[a]).slice(0,4).map(i=>MN[i]+' ('+org[i]+')');
+ document.getElementById('iMoy').textContent='ตัดก้อนแรกออกแล้ว เดือนที่ยังโอนได้ดีสุดคือ '+rk.join(', ')+' · ใช้ดูทิศทางเท่านั้น';
+
+ const labels=[...Array(NM).keys()].map(i=>'M'+i);
+ Chart_('cLife',{type:'line',data:{labels,datasets:[...ps.map(p=>ds(PH[p],SH[p],pc(p),{tension:.25,pointRadius:2,fill:false})),ds('ค่าเฉลี่ย 4 เฟส',AVG,css('--ink'),{borderDash:[6,4],pointRadius:0,fill:false})]},options:{scales:{y:{title:{display:true,text:'% ของยูนิตเฟส',color:css('--mut')}}}}});
+ document.getElementById('iLife').textContent=`ค่าเฉลี่ย 4 เฟส: M0 ${AVG[0].toFixed(0)}% · M1 ${AVG[1].toFixed(0)}% · M2 ${AVG[2].toFixed(0)}% · M3 ขึ้นไป ${(100-AVG[0]-AVG[1]-AVG[2]).toFixed(0)}%`;
+ Chart_('cCum',{type:'line',data:{labels,datasets:[...ps.map(p=>ds(PH[p],cum(SH[p]),pc(p),{pointRadius:2,fill:false})),ds('ค่าเฉลี่ย',cum(AVG),css('--ink'),{borderDash:[6,4],pointRadius:0,fill:false})]},options:{scales:{y:{max:100,title:{display:true,text:'% สะสม',color:css('--mut')}}}}});
+
+ const dom=Array(31).fill(0);rs.forEach(r=>dom[r.d-1]++);
+ Chart_('cDom',{type:'bar',data:{labels:dom.map((_,i)=>i+1),datasets:[ds('ยูนิต',dom,css('--acc'))]},options:{plugins:{legend:{display:false}}}});
+ const b1=rs.filter(r=>r.d<=10).length,b2=rs.filter(r=>r.d>10&&r.d<=20).length,b3=rs.filter(r=>r.d>20).length;
+ document.getElementById('iDom').textContent=`วันที่ 1–10: ${pct(b1,total)} · 11–20: ${pct(b2,total)} · 21–สิ้นเดือน: ${pct(b3,total)} → การโอนกระจุกที่ปลายเดือน`;
+ const wd=Array(7).fill(0);rs.forEach(r=>wd[r.w]++);
+ Chart_('cWd',{type:'bar',data:{labels:WD,datasets:[ds('ยูนิต',wd,css('--p2'))]},options:{plugins:{legend:{display:false}}}});
+ document.getElementById('iWd').textContent=`วันศุกร์ ${pct(wd[5],total)} · พุธ ${pct(wd[3],total)} · ไม่มีการโอนเสาร์–อาทิตย์`;
+
+ const pp=(p,k)=>100*R.filter(r=>r.p===p&&r.pay===k).length/R.filter(r=>r.p===p).length;
+ Chart_('cPay',{type:'bar',data:{labels:ps.map(p=>PH[p]),datasets:[ds('สินเชื่อ',ps.map(p=>pp(p,'l')),css('--p0')),ds('เงินสด',ps.map(p=>pp(p,'c')),css('--p1'))]},options:{scales:{x:{stacked:true},y:{stacked:true,max:100,title:{display:true,text:'%',color:css('--mut')}}}}});
+ document.getElementById('iPay').textContent=ps.map(p=>PH[p]+' สินเชื่อ '+pp(p,'l').toFixed(0)+'%').join(' · ');
+ Chart_('cPayM',{type:'bar',data:{labels:MN,datasets:[ds('สินเชื่อ',MN.map((_,i)=>rs.filter(r=>r.m===i+1&&r.pay==='l').length),css('--p0')),ds('เงินสด',MN.map((_,i)=>rs.filter(r=>r.m===i+1&&r.pay==='c').length),css('--p1'))]},options:{scales:{x:{stacked:true},y:{stacked:true}}}});
+
+ const bys=[2018,2019,2020,2021,2022,2023,2024,2025];
+ Chart_('cLead',{type:'bar',data:{labels:bys,datasets:ps.map(p=>ds(PH[p],bys.map(b=>med(rs.filter(r=>r.p===p&&r.by===b).map(r=>r.lead))),pc(p)))},options:{scales:{y:{title:{display:true,text:'วัน',color:css('--mut')}}}}});
+ document.getElementById('iLead').textContent='ค่ากลางรวม '+lm+' วัน — ยอดจองช่วงขายก่อนสร้างรอ 1–2+ ปี แต่ยอดจองใกล้/หลังตึกเสร็จโอนใน ~3–5 สัปดาห์';
+ const bk={};rs.forEach(r=>{if(r.bym!=null)bk[r.bym]=(bk[r.bym]||0)+1});
+ const bmin=Math.min(...Object.keys(bk).map(Number),...allYm),bmax=Math.max(...allYm);const bl=[];for(let y=bmin;y<=bmax;y++)bl.push(y);
+ const trf={};rs.forEach(r=>trf[r.ym]=(trf[r.ym]||0)+1);
+ Chart_('cBook',{type:'line',data:{labels:bl.map(ymLabel),datasets:[ds('ยอดจอง (ที่โอนแล้ว)',bl.map(y=>bk[y]||0),css('--p1'),{pointRadius:0,borderWidth:2}),ds('ยอดโอน',bl.map(y=>trf[y]||0),css('--acc'),{pointRadius:0,borderWidth:2})]},options:{scales:{x:{ticks:{maxRotation:60,autoSkip:true,maxTicksLimit:24}}}}});
+ let pr='<tr><th>เฟส</th><th>ขายก่อนสร้าง (จอง &gt;180 วันก่อนโอน)</th><th>Lead time ค่ากลาง</th><th>จองใกล้ตึกเสร็จ (≤180 วัน)</th><th>Lead time ค่ากลาง</th></tr>';
+ ps.forEach(p=>{const a=R.filter(r=>r.p===p&&r.lead!=null);const x=a.filter(r=>r.lead>180),y=a.filter(r=>r.lead<=180);
+  pr+=`<tr><td><b>${PH[p]}</b></td><td>${fmt(x.length)} (${pct(x.length,a.length)})</td><td>${med(x.map(r=>r.lead))} วัน</td><td>${fmt(y.length)} (${pct(y.length,a.length)})</td><td>${med(y.map(r=>r.lead))} วัน</td></tr>`});
+ document.getElementById('tPresale').innerHTML=pr;
+
+ const sel=document.getElementById('selBld');if(!sel.options.length){sel.innerHTML=PH.map((p,i)=>`<option value="${i}">${PN[i]}</option>`).join('');sel.value=1;sel.onchange=renderBld}
+ renderBld();
+
+ const bands=[['<1.5',0,1500],['1.5–1.75',1500,1750],['1.75–2.0',1750,2000],['2.0–2.5',2000,2500],['≥2.5',2500,1e9]];
+ Chart_('cPrice',{type:'bar',data:{labels:bands.map(b=>b[0]+' ล้าน'),datasets:ps.map(p=>{const a=R.filter(r=>r.p===p);return ds(PH[p],bands.map(b=>100*a.filter(r=>r.v>=b[1]&&r.v<b[2]).length/a.length),pc(p))})}});
+ document.getElementById('iPrice').textContent='ราคาโอนสุทธิเฉลี่ย (ล้านบาท/ยูนิต): '+ps.map(p=>{const a=R.filter(r=>r.p===p);return PH[p]+' '+(a.reduce((s,r)=>s+r.v,0)/a.length/1000).toFixed(2)}).join(' · ');
+ const purs=['อยู่เอง','ปล่อยเช่า','ขายต่อ','ไม่ระบุ'];const pcol=[css('--p2'),css('--p0'),css('--p1'),'#98a2b3'];
+ Chart_('cPur',{type:'bar',data:{labels:ps.map(p=>PH[p]),datasets:purs.map((u,j)=>ds(u,ps.map(p=>{const a=R.filter(r=>r.p===p);return 100*a.filter(r=>r.pur===u).length/a.length}),pcol[j]))},options:{scales:{x:{stacked:true},y:{stacked:true,max:100}}}});
+ document.getElementById('iPur').textContent='ปล่อยเช่า '+pct(rs.filter(r=>r.pur==='ปล่อยเช่า').length,total)+' · อยู่เอง '+pct(rs.filter(r=>r.pur==='อยู่เอง').length,total)+' · ขายต่อ '+pct(rs.filter(r=>r.pur==='ขายต่อ').length,total)+' · ไม่ระบุ/ไม่มีข้อมูล '+pct(rs.filter(r=>r.pur==='ไม่ระบุ').length,total)+' (ส่วน “ไม่ระบุ” มากใน Shift/Colony จึงควรใช้เป็นแนวโน้ม)';
+ const bn=rs.filter(r=>r.bank);const bc={};bn.forEach(r=>bc[r.bank]=(bc[r.bank]||0)+1);const bt=Object.entries(bc).sort((a,b)=>b[1]-a[1]).slice(0,8);
+ Chart_('cBank',{type:'bar',data:{labels:bt.map(b=>b[0]),datasets:[ds('% ของยูนิตสินเชื่อที่ระบุธนาคาร',bt.map(b=>100*b[1]/bn.length),css('--p0'))]},options:{plugins:{legend:{display:false}}}});
+ document.getElementById('iBank').textContent='อิงเฉพาะ '+fmt(bn.length)+' ยูนิตสินเชื่อที่ระบุธนาคาร จากสินเชื่อทั้งหมด '+fmt(loan)+' ยูนิต (Space/Shift ระบุน้อย จึงเด่นที่ Colony/Island) · '+bt.slice(0,3).map(b=>b[0]+' '+(100*b[1]/bn.length).toFixed(0)+'%').join(' · ');
+}
+function renderBld(){
+ const p=+document.getElementById('selBld').value;const a=R.filter(r=>r.p===p);
+ const bl=[...new Set(a.map(r=>r.bld))].sort();
+ const ys=[];for(let y=first[p];y<=Math.max(...a.map(r=>r.ym));y++)ys.push(y);
+ Chart_('cBld',{type:'bar',data:{labels:ys.map(ymLabel),datasets:bl.map((b,i)=>ds('อาคาร '+b,ys.map(y=>a.filter(r=>r.bld===b&&r.ym===y).length),BC[i%BC.length]))},options:{scales:{x:{stacked:true,ticks:{maxRotation:60}},y:{stacked:true}}}});
+ let t='<tr><th>อาคาร</th><th>ยูนิต</th><th>เดือนสูงสุด</th><th>ยอดเดือนสูงสุด</th><th>โอนใน M0+M1</th><th>โอนหลัง M3</th></tr>';
+ bl.forEach(b=>{const x=a.filter(r=>r.bld===b);const m={};x.forEach(r=>m[r.ym]=(m[r.ym]||0)+1);const pk=Object.entries(m).sort((u,v)=>v[1]-u[1])[0];
+  t+=`<tr><td><b>${b}</b></td><td>${fmt(x.length)}</td><td>${ymLabel(+pk[0])}</td><td>${fmt(pk[1])}</td><td>${pct(x.filter(r=>r.rel<=1).length,x.length)}</td><td>${pct(x.filter(r=>r.rel>=3).length,x.length)}</td></tr>`});
+ document.getElementById('tBld').innerHTML=t;
+ const late=bl.map(b=>{const x=a.filter(r=>r.bld===b);return [b,100*x.filter(r=>r.rel>=3).length/x.length]}).sort((u,v)=>v[1]-u[1])[0];
+ document.getElementById('iBld').textContent='อาคารที่โอนช้าสุดของ '+PH[p]+' คืออาคาร '+late[0]+' (โอนหลัง M3 = '+late[1].toFixed(0)+'%) — ใช้ดูว่าหางของเฟสมาจากอาคารไหน';
+}
+function curveFor(s){const raw=s==='avg'?AVG.slice():SH[+s].slice();const sum=raw.reduce((a,b)=>a+b,0);return raw.map(v=>v/sum)}
+function loanFor(s){return s==='avg'?LOANALL:100*R.filter(r=>r.p===+s&&r.pay==='l').length/R.filter(r=>r.p===+s&&r.pay!=='n').length}
+function cappedPlan(units,a,cap){const out=[];let carry=0;const n=a.length;for(let i=0;i<80;i++){const want=(i<n?a[i]*units:0)+carry;const x=Math.min(want,cap);out.push(x);carry=want-x;if(i>=n-1&&carry<0.5){break}}return out}
+function plan(){
+ const n=+document.getElementById('nUnits').value||0;const s=document.getElementById('selScn').value;
+ const capEl=document.getElementById('capU');if(!capEl.value)capEl.value=PEAK;const cap=+capEl.value||PEAK;
+ const sm=document.getElementById('startM').value||'2027-01';const sy=+sm.slice(0,4),smn=+sm.slice(5,7);const ym0=sy*12+smn-1;
+ const a=curveFor(s);const u=a.map(v=>v*n);const cp=cappedPlan(n,a,cap);
+ const L=Math.max(a.length,cp.length);const lab=[...Array(L).keys()].map(i=>ymLabel(ym0+i));
+ const base=[...Array(L).keys()].map(i=>Math.round(u[i]||0));const capd=[...Array(L).keys()].map(i=>Math.round(cp[i]||0));
+ const peak=Math.max(...u),over=u.filter(v=>v>cap).length;
+ const r80=reach(a.map(v=>v*100),80);
+ const PK=[['ยอดโอนสูงสุด/เดือน (ตามเส้นโค้ง)',fmt(peak)+' ยูนิต',lab[u.indexOf(peak)]],['เทียบเดือนสูงสุดที่เคยทำได้',(peak/PEAK).toFixed(2)+'×','เดิมสูงสุด '+fmt(PEAK)+' ยูนิต ('+ymLabel(PEAKYM)+')'],
+  ['โอน 2 เดือนแรก',fmt(u[0]+u[1])+' ยูนิต',pct(u[0]+u[1],n)+' ของโครงการ'],['ถึง 80% ที่',lab[r80],'M'+r80],
+  ['ยูนิตสินเชื่อโดยประมาณ',fmt(n*loanFor(s)/100),loanFor(s).toFixed(0)+'% (ที่เหลือเงินสด)'],['โอนวันที่ 21–สิ้นเดือน (เดือนสูงสุด)',fmt(peak*EOM/100)+' ยูนิต','≈'+EOM.toFixed(0)+'% ของยอดเดือน']];
+ document.getElementById('planK').innerHTML=PK.map(k=>`<div class="card kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join('');
+ Chart_('cPlan',{type:'bar',data:{labels:lab,datasets:[ds('ตามเส้นโค้งจริง',base,css('--acc')),ds('แผนแนะนำ (ทยอยโอน ไม่เกินเพดาน)',capd,css('--p1'))]},options:{scales:{y:{title:{display:true,text:'ยูนิต/เดือน',color:css('--mut')}}}}});
+ let t='<tr><th>เดือน</th><th>ตามเส้นโค้ง (ยูนิต)</th><th>% ของโครงการ</th><th>สะสม %</th><th>แผนแนะนำ (ยูนิต)</th><th>สะสม %</th><th>ปลายเดือน 21+ (แผนแนะนำ)</th></tr>';let c1=0,c2=0;
+ for(let i=0;i<L;i++){c1+=u[i]||0;c2+=cp[i]||0;t+=`<tr><td>${lab[i]} <span class="sub">(M${i})</span></td><td>${fmt(u[i]||0)}</td><td>${((a[i]||0)*100).toFixed(1)}%</td><td>${(c1/n*100).toFixed(0)}%</td><td><b>${fmt(cp[i]||0)}</b></td><td>${(c2/n*100).toFixed(0)}%</td><td>${fmt((cp[i]||0)*EOM/100)}</td></tr>`}
+ document.getElementById('tPlan').innerHTML=t;
+ const isl=R.filter(r=>r.p===3).length;
+ document.getElementById('rec').innerHTML=`
+ <li><b>ขนาดโครงการ:</b> KAVALON ${fmt(n)} ยูนิต = ${(n/isl).toFixed(2)} เท่าของ Island (${fmt(isl)} ยูนิต ซึ่งเป็นเฟสใหญ่สุดที่เคยโอน) ภาระเดือนแรกๆ จึงสูงกว่าที่เคยทำมา</li>
+ <li><b>ตามเส้นโค้งที่เลือก:</b> ${over?`มี ${over} เดือนเกินเพดาน ${fmt(cap)} ยูนิต/เดือน`:`ไม่มีเดือนใดเกินเพดาน ${fmt(cap)} ยูนิต/เดือน`} — แผนแนะนำ (สีส้ม) โอนครบใน ${cp.length} เดือน เทียบกับเส้นโค้งจริงที่กระจายใน ${a.filter(v=>v>0.001).length} เดือน</li>
+ <li><b>เพดานต่อเดือน</b> ตั้งต้นที่ ${fmt(PEAK)} ยูนิต = เดือนสูงสุดที่เคยทำได้จริง (${ymLabel(PEAKYM)}) ปรับได้ตามกำลังทีมโอน/ธนาคาร/สำนักงานที่ดิน</li>
+ <li><b>เปิดโอนเป็นรอบตามอาคาร</b> ช่วยกระจายโหลด (ดูหัวข้อ 13) และให้ทีมเตรียมเอกสาร/Pre-approve ล่วงหน้า 2–3 เดือน</li>
+ <li><b>ปลายเดือนคือจังหวะปิดยอด:</b> ราว ${EOM.toFixed(0)}% โอนวันที่ 21–สิ้นเดือน และวันศุกร์สูงสุด (${FRI.toFixed(0)}%) ควรวางคิวนิติกรรมและทีมประสานสินเชื่อให้เข้มช่วงนี้</li>
+ <li><b>วันเริ่มโอนเป็นค่าสมมติ</b> (${ymFull(ym0)}) — เปลี่ยนได้ที่ช่อง “เริ่มโอน”</li>`;
+}
+function execSummary(){
+ const pts=PH.map((p,i)=>{const a=R.filter(r=>r.p===i);return p+' เริ่มโอน '+ymFull(first[i])+' (M0+M1 = '+pct(a.filter(r=>r.rel<=1).length,a.length)+')'});
+ const m80=reach(AVG,80);const a=curveFor('avg');const u0=a[0]*KAV,u1=a[1]*KAV;
+ const L=i=>(100*R.filter(r=>r.p===i&&r.pay==='l').length/R.filter(r=>r.p===i).length).toFixed(0);
+ document.getElementById('execList').innerHTML=`
+ <li><b>เดือนไหนโอนดี?</b> ไม่ผูกกับฤดูกาล แต่ผูกกับ <b>เดือนเปิดโอนของเฟส</b> และเดือนถัดไป — ${pts.join(' · ')}</li>
+ <li><b>รูปแบบเทรนด์:</b> “เปิดแรงแล้วลดเป็นหางยาว” ค่าเฉลี่ย 4 เฟส M0 ≈ ${AVG[0].toFixed(0)}%, M1 ≈ ${AVG[1].toFixed(0)}%, M2 ≈ ${AVG[2].toFixed(0)}% และถึง 80% สะสมที่ M${m80} (Shift คือข้อยกเว้นที่มีคลื่นลูกที่ 2)</li>
+ <li><b>ในแต่ละเดือน:</b> ${EOM.toFixed(0)}% โอนวันที่ 21–สิ้นเดือน และวันศุกร์สูงสุด (${FRI.toFixed(0)}%) · สัดส่วนสินเชื่อลดลงจาก ${L(0)}% (Space) เหลือ ${L(3)}% (Island)</li>
+ <li><b>KAVALON ${fmt(KAV)} ยูนิต:</b> ตามเส้นโค้งเฉลี่ย 2 เดือนแรกจะต้องโอนราว ${fmt(u0)} + ${fmt(u1)} ยูนิต เดือนแรก ${(u0/PEAK).toFixed(2)} เท่าของเดือนสูงสุดที่เคยทำได้ (${fmt(PEAK)} ยูนิต, ${ymLabel(PEAKYM)})</li>
+ <li><b>ข้อเสนอ:</b> ทยอยเปิดโอนเป็นรอบตามอาคาร ให้แต่ละเดือนไม่เกินกำลังที่เคยทำได้ + เตรียมเอกสาร/สินเชื่อล่วงหน้า + เน้นกำลังทีมช่วงวันที่ 21–สิ้นเดือน (ดูหัวข้อ 17)</li>
+ <li><b>ข้อจำกัด:</b> ข้อมูลมีเฉพาะยูนิตที่โอนแล้ว จึงวัดอัตราปิดโอน/ยกเลิกไม่ได้ · ข้อมูลล่าสุด ${dLabel(LAST)}</li>`;
+}
+document.getElementById('chips').innerHTML=PH.map((p,i)=>`<button class="chip" data-p="${i}"><i style="background:${pc(i)}"></i>${p}</button>`).join('');
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const p=+b.dataset.p;if(active.has(p)){if(active.size>1)active.delete(p)}else active.add(p);b.classList.toggle('off',!active.has(p));render()});
+['nUnits','selScn','startM','capU'].forEach(id=>document.getElementById(id).oninput=plan);
+document.getElementById('nUnits').addEventListener('input',()=>{document.getElementById('tot2192').textContent=fmt(+document.getElementById('nUnits').value||0)});
+document.getElementById('lastF').textContent=dLabel(LAST);execSummary();render();plan();
+</script>
+</body>
+</html>
